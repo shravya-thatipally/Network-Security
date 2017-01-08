@@ -1,0 +1,62 @@
+                                Assignment - 3
+
+
+I used the code from below sites as reference for my program
+
+
+http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html  --- for socket programming
+
+http://randu.org/tutorials/threads/   -- for pthreads
+
+https://computing.llnl.gov/tutorials/pthreads/samples/hello.c  ----- for pthreads
+
+http://stackoverflow.com/questions/3141860/aes-ctr-256-encryption-mode-of-operation-on-openssl --- for AES encryption 
+
+
+
+In order to compile I have installed libssl first:
+	$ sudo apt-get install libssl-dev
+
+I used the following commands:
+
+server:
+./pbproxy.o -l 1234 -k mykey localhost 4444
+
+client:
+
+./pbproxy.o  -k mykey localhost 1234
+
+netcat:
+
+
+nc -l -p 4444
+
+The output is visible on netcat.
+
+Execution through ssh
+The setup command looks like as following:
+    -   
+    ./pbproxy -l 1234 -k mykey 127.0.0.1 22
+      
+    
+    By setting the key string of "mykey" and the ip address and port number of sshd server, it will completely proxy the server flow.
+
+ client-mode:
+
+    
+    ssh -o "ProxyCommand /home/shravya/Desktop/hw3/pbproxy -k mykey 127.0.0.1 1234" localhost
+    -------------------------------------------------------    
+    
+    As command shown above, we should use the ABSOLUTE path of pbproxy instead of relative one. Then "-k" must combine with the same key "mykey" as defined in server-side.
+
+
+On the proxy server side, code will setup 2 threads to handle the flows of "proxy client to sshd" and "sshd to proxy client" respectively.
+On the proxy client side, it will also setup 2 threads to handle the flows of incoming and outcoming to the proxy server.
+
+
+In this AES encryption is in CTR mode. It creates a randomly new IV only once for each TCP connection at the beginning of connection-setup, by using "RAND_bytes" library function.
+
+I implementing multithreading and AES encryption. 
+
+
+
