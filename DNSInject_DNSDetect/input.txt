@@ -1,0 +1,8 @@
+172.217.4.196	www.google.com
+104.16.37.249	www.stackoverflow.com
+129.49.2.176	www.stonybrook.edu
+130.245.27.2	www.cs.stonybrook.edu.
+172.217.4.197	www.gmail.com
+129.49.1.70	www.codeguru.com
+69.172.201.153	www.geeksforgeeks.com
+12.171.94.33	www.whoisbest.com

@@ -1,0 +1,139 @@
+#include <pcap.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <ctype.h>
+#include <assert.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <time.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include<netinet/ether.h>
+int main(int argc, char *argv[]) {
+	int p= 0,count = -1;
+	char *i = NULL, *f = NULL,*expression = NULL;
+	char errbuf[PCAP_ERRBUF_SIZE];
+	pcap_t *handle;
+	struct bpf_program filter;
+        bpf_u_int32 mask;
+	bpf_u_int32 net;
+	struct pcap_pkthdr header;
+	const u_char *packet;
+	
+	while ((p = getopt(argc, argv, "i:r:s:g")) != -1) {
+		switch(p) {
+			case 'i':
+				i = optarg;
+				
+				break;
+			case 'f':
+				f = optarg;
+				
+				break;
+		
+			case '?':
+				// when user didn't specify argument
+				if (optopt == 'i') {
+					printf("Please specify interface!\n");
+					return 0;
+				} else if (optopt == 'f') {
+					printf("Please specify file name!\n");
+					return 0;
+				} else {
+					printf("Unknown argument!\n");
+					return 0;
+				}
+			default:
+				printf("Default case?!\n");
+				return 0;
+		}
+		
+	}
+	
+	// get expression
+	if (optind == argc - 1)
+		expression = argv[optind];
+else if (optind < argc -1) {
+		printf("Too many arguments. Exiting...\n");
+		return 0;
+	}
+	
+	if (i!= NULL && f != NULL) {
+		printf("You cannot use interface and file!\n");
+		return 0;
+	}
+	
+	if (i == NULL && f == NULL) {
+		i = pcap_lookupdev(errbuf);
+		if (i == NULL) {
+			printf("Error message: %s\n\
+			Exiting...\n", errbuf);
+			return 0;
+		}
+	}
+	
+	printf("\nMydump parameters:\ninterface: %s\tfile: %s\tstring: %s\thttp sniffer mode: %s\texpression: %s\n\n\n", i, f, s,\
+		http ? "true" : "false", expression);
+	
+	//if interface is given
+	if (i != NULL && f == NULL) {
+		
+		if (pcap_lookupnet(i, &net, &mask, errbuf) == -1) {
+			printf("Error: %s\n", errbuf);
+			net = 0;
+			mask = 0;
+		}
+		// Start pcap session
+		handle = pcap_open_live(i, BUFSIZ, 1, 1000, errbuf);
+
+		if (handle == NULL) {
+			printf("Error message: %s\n\
+			Existing...\n", errbuf);
+			return 0;
+
+		}
+	} else if (i == NULL && f != NULL) {
+		handle = pcap_open_offline(f, errbuf);
+		if (handle == NULL) {
+			printf("Error message: %s\n\
+			Existing...\n", errbuf);
+			return 0;
+		}
+	} else {
+		printf("This shouldn't be printed out! Existing...\n");
+		return 0;
+	}
+	
+	// check if link-layer header is ethernet
+	if (pcap_datalink(handle) != DLT_EN10MB) {
+		printf("Interface %s doesn't  ethernet header! Existing\n", i);
+		return 0;
+	}
+	
+	
+	
+	// compile and apply expression
+	if (expression != NULL) {
+		
+		if (pcap_compile(handle, &filter, expression, 0, net) == -1) {
+			printf("Error message: %s\n\
+			Existing...\n", pcap_geterr(handle));
+			return 0;
+		}
+		
+		if (pcap_setfilter(handle, &filter) == -1) {
+			printf("Error message: %s\n\
+			Existing...\n", pcap_geterr(handle));
+			return 0;
+		}
+	}
+	
+	
+	
+	pcap_close(handle);
+	
+	return 0;
+}
